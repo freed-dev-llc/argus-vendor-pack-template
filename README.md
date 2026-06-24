@@ -51,6 +51,27 @@ The public SPI it builds against ships in the `argus-netbox` distribution:
 Once registered, your pack's `name` is selectable everywhere a collector is (the
 `discovery_scan` / `network_topology` / reconcile tools, `SCHEDULE_COLLECTOR`, etc.).
 
+## Develop
+
+The template ships dev tooling, CI, and an **offline** test harness so your pack starts
+from a passing baseline:
+
+```bash
+pip install -e ".[dev]"     # pulls argus-netbox (the SPI) from PyPI
+ruff check src tests && mypy src && pytest -q
+```
+
+- `src/argus_vendor_example/_common.py` — a shared async-HTTP collector helper (auth'd
+  client + a JSON GET that degrades HTTP/transport/JSON errors into
+  `DiscoveryResult.notes`, plus an `unconfigured_note()` guard). Your `collect()` becomes
+  just *auth + endpoints + normalization*.
+- `tests/` — a recorded-fixture harness (`tests/_fixtures.py` loader + `tests/fixtures/`)
+  with a worked example (`tests/test_http_helper.py`); tests run fully offline via `respx`.
+- `.github/workflows/ci.yml` — runs ruff + mypy + pytest on every push/PR.
+
+See the upstream [vendor-pack guide](https://github.com/freed-dev-llc/argus/blob/main/docs/VENDOR_PACKS.md)
+for the full contract.
+
 ## Private packs
 
 Nothing here has to be public. A private pack lives in a private repo, depends on the

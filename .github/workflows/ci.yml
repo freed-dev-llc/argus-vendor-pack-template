@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Keep the template green so packs derived from it start from a passing baseline.
+# Mirrors the CI used by argus and argus-vendor-packs. `argus-netbox` (the public SPI)
+# resolves from PyPI, so no special wiring is needed to import `argus.discovery.*`.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Ruff
+        run: ruff check src tests
+      - name: Mypy
+        run: mypy src
+        continue-on-error: true
+      - name: Pytest
+        run: pytest -v --cov=argus_vendor_example --cov-report=term-missing
+      - name: Discovery smoke test
+        run: python -c "from argus.discovery.vendors import discover_packs; ps = sorted(discover_packs()); print(ps); assert 'example' in ps"

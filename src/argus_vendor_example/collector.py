@@ -8,7 +8,11 @@ from __future__ import annotations
 
 from argus.discovery.base import Collector, DiscoveredDevice, DiscoveryResult
 
+from ._common import get_json, http_client, unconfigured_note
 from .models import MANUFACTURER, role_from_model
+
+#: Env vars this pack consumes. Referenced by the VendorPack descriptor in __init__.py.
+CONFIG_VARS = ("EXAMPLE_URL", "EXAMPLE_API_TOKEN")
 
 
 class ExampleCollector(Collector):
@@ -17,22 +21,32 @@ class ExampleCollector(Collector):
     async def collect(self) -> DiscoveryResult:
         result = DiscoveryResult(collector=self.name)
 
-        # 1) Read config/credentials. Use your own env vars, or argus's settings:
-        #        from argus.config import get_settings
-        #    Guard the unconfigured case so a scan degrades gracefully:
-        #        result.notes.append("example pack not configured: set EXAMPLE_API_TOKEN")
-        #        return result
+        # 1) Guard the unconfigured case so a scan degrades gracefully (never raise).
+        if note := unconfigured_note(self.name, CONFIG_VARS):
+            result.notes.append(note)
+            return result
+
+        # 2) Call your vendor API (read-only) with the shared helper. Read your config
+        #    from argus's settings (`from argus.config import get_settings`) or your own env:
         #
-        # 2) Call your vendor API / poll devices (read-only).
+        #        settings = get_settings()
+        #        async with http_client(
+        #            settings.example_url,
+        #            headers={"Authorization": f"Bearer {settings.example_api_token}"},
+        #        ) as client:
+        #            devices = await get_json(client, "/v1/devices", notes=result.notes) or []
         #
-        # 3) Normalize each device, e.g.:
-        #        result.devices.append(DiscoveredDevice(
-        #            name=device["name"], mac=device.get("mac"), primary_ip=device.get("ip"),
-        #            site=site_name, role=role_from_model(device.get("model")),
-        #            model=device.get("model"), manufacturer=MANUFACTURER, raw=device,
-        #        ))
+        # 3) Normalize each device:
+        #
+        #        for d in devices:
+        #            result.devices.append(DiscoveredDevice(
+        #                name=d["name"], mac=d.get("mac"), primary_ip=d.get("ip"),
+        #                role=role_from_model(d.get("model")), model=d.get("model"),
+        #                manufacturer=MANUFACTURER, raw=d,
+        #            ))
         #    Optionally populate result.clients / result.links / result.ip_addresses.
 
-        _ = (DiscoveredDevice, MANUFACTURER, role_from_model)  # referenced in the steps above
+        # Referenced by the implementation sketch above (remove once implemented):
+        _ = (DiscoveredDevice, MANUFACTURER, role_from_model, get_json, http_client)
         result.notes.append("example vendor pack template — implement ExampleCollector.collect().")
         return result

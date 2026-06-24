@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from argus.discovery.vendors.pack import DEVICES, Transport, VendorPack
 
-from .collector import ExampleCollector
+from .collector import CONFIG_VARS, ExampleCollector
 from .models import MANUFACTURER
 
 #: The entry point (see pyproject.toml) resolves to this instance.
@@ -13,7 +13,7 @@ EXAMPLE_PACK = VendorPack(
     manufacturer=MANUFACTURER,
     transport=Transport.CONTROLLER_API,  # or Transport.DEVICE_SNMP / DEVICE_SSH
     capabilities=frozenset({DEVICES}),  # add CLIENTS / TOPOLOGY / CONFIG as you implement them
-    config_vars=("EXAMPLE_URL", "EXAMPLE_API_TOKEN"),
+    config_vars=CONFIG_VARS,
     collector=ExampleCollector,
 )
 
