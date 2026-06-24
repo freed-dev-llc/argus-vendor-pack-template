@@ -13,11 +13,42 @@ version = "0.1.0"
 description = "Template Argus vendor pack — copy to build your own (public or private)."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["argus-netbox>=0.1.4"]  # the public SPI: Collector, DiscoveryResult, VendorPack
+dependencies = [
+    "argus-netbox>=0.1.4",  # the public SPI: Collector, DiscoveryResult, VendorPack
+    "httpx>=0.28.1",        # async HTTP client used by collectors (see _common.py)
+]
 
 # This is what makes the pack discoverable. The value resolves to a VendorPack instance.
 [project.entry-points."argus.vendor_packs"]
 example = "argus_vendor_example:EXAMPLE_PACK"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=5.0",
+    "respx>=0.22",  # offline mocking of collector HTTP calls (see tests/test_http_helper.py)
+    "ruff>=0.15",
+    "mypy>=2.1",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["argus_vendor_example"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true  # argus-netbox ships py.typed from 0.1.5; tolerate older installs
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

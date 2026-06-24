@@ -12,6 +12,9 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
 
 # Env / secrets
 .env
