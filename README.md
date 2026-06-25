@@ -7,10 +7,11 @@ vendor/technology without modifying Argus itself — in your own repo, **public 
 > **This is a GitHub template repository.** Click **“Use this template”** above to create
 > your own pack repo, then follow [Use it](#use-it).
 
-It is structured exactly like Argus's built-in UniFi pack, and is how private (e.g.
+It is structured like Argus's built-in vendor packs, and is how private (e.g.
 MSP-supported) vendor packs attach: Argus is the **host**, your pack is a **plugin**
 discovered via the `argus.vendor_packs` entry point — Argus never needs to know your pack
-exists at build time. See Argus
+exists at build time. Vendor *practices* and read-only management-plane data are optional,
+separately-added capabilities (ADR-0009 / ADR-0010); a pack works fine without them. See Argus
 [ADR-0005](https://github.com/freed-dev-llc/argus/blob/main/docs/architecture/adr/0005-vendor-packs.md).
 
 ## What a pack is
@@ -18,14 +19,21 @@ exists at build time. See Argus
 A `VendorPack` bundles, for one vendor:
 
 - a **`Collector`** — the read-only adapter that observes live state and returns a
-  normalized `DiscoveryResult` (devices / clients / links);
+  normalized `DiscoveryResult` (devices / clients / links / ip_addresses / notes);
 - **metadata** — `manufacturer`, `transport`, `capabilities`, and the `config_vars` it
   consumes;
 - **model normalization** — vendor model strings → NetBox role / manufacturer.
 
 The public SPI it builds against ships in the `argus-netbox` distribution:
-`argus.discovery.base` (`Collector`, `DiscoveryResult`, `Discovered*`) and
-`argus.discovery.vendors.pack` (`VendorPack`, `Transport`, capability constants).
+`argus.discovery.base` (`Collector`, `DiscoveryResult`, `Discovered*`),
+`argus.discovery.vendors.pack` (`VendorPack`, `Transport`, capability constants), and the
+optional `argus.discovery.practices` (vendor-practices SPI, ADR-0009).
+
+**Practices & management (optional).** A pack may publish reusable practices via
+`argus.discovery.practices` (ADR-0009) and attach read-only management-plane data through a
+`DeviceManagement` on each discovered device (ADR-0010); both are optional add-ons that a
+basic pack can skip. See the upstream
+[vendor-pack guide](https://github.com/freed-dev-llc/argus/blob/main/docs/VENDOR_PACKS.md).
 
 ## Use it
 
