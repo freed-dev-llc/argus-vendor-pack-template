@@ -44,6 +44,8 @@ class ExampleCollector(Collector):
         #                role=role_from_model(d.get("model")), model=d.get("model"),
         #                manufacturer=MANUFACTURER, raw=d,
         #            ))
+        #    DiscoveredDevice also accepts optional `site=` and a read-only
+        #    `management=DeviceManagement(...)` (management-plane data, ADR-0010).
         #    Optionally populate result.clients / result.links / result.ip_addresses.
 
         # Referenced by the implementation sketch above (remove once implemented):
